@@ -103,7 +103,7 @@
               cheese
 
               # Audio control
-              pavucontrol
+              pwvucontrol
 
               # Icons
               papirus-icon-theme
@@ -836,7 +836,7 @@
                     "format-icons": {
                       "default": ["", "", ""]
                     },
-                    "on-click": "pavucontrol",
+                    "on-click": "pwvucontrol",
                     "on-click-right": "pactl set-default-sink $(pactl list short sinks | grep -v $(pactl get-default-sink) | head -n1 | cut -f2)",
                     "tooltip-format": "{desc}"
                   },
