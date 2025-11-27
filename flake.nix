@@ -90,6 +90,9 @@
               wl-clipboard
               grim
               slurp
+              swaynotificationcenter
+              blueman
+              networkmanagerapplet
 
               # 1Password
               _1password-cli
@@ -101,6 +104,9 @@
 
               # Audio control
               pavucontrol
+
+              # Icons
+              papirus-icon-theme
 
               # Custom shorthand: nix-rebuild
               (pkgs.writeShellScriptBin "nix-rebuild" ''
@@ -271,12 +277,368 @@
                 ripgrep
                 ghostty
                 fastfetch
+                jujutsu
               ];
+
+              # Jujutsu config
+              home.file.".jjconfig.toml".text = ''
+                [ui]
+                editor = "true"
+
+                [user]
+                name = "boobie"
+                email = "vessel.fins_4b@icloud.com"
+              '';
 
               # Ghostty config
               home.file.".config/ghostty/config".text = ''
                 font-family = "JetBrains Mono"
                 font-size = 12
+              '';
+
+              # Rofi config
+              home.file.".config/rofi/config.rasi".text = ''
+                configuration {
+                  modi: "drun,run,window";
+                  show-icons: true;
+                  icon-theme: "Papirus-Dark";
+                  display-drun: " Apps";
+                  display-run: " Run";
+                  display-window: " Windows";
+                  drun-display-format: "{name}";
+                  font: "JetBrainsMono Nerd Font 11";
+                }
+
+                @theme "custom"
+              '';
+
+              # Rofi theme - macOS Spotlight inspired
+              home.file.".config/rofi/custom.rasi".text = ''
+                * {
+                  bg: rgba(28, 28, 35, 0.92);
+                  bg-selected: rgba(60, 120, 240, 0.85);
+                  fg: #e8e8e8;
+                  fg-dim: #888888;
+
+                  background-color: transparent;
+                  text-color: @fg;
+
+                  margin: 0;
+                  padding: 0;
+                  spacing: 0;
+                }
+
+                window {
+                  location: north;
+                  y-offset: 200;
+                  width: 640;
+                  border-radius: 12px;
+                  background-color: @bg;
+                  transparency: "real";
+                }
+
+                mainbox {
+                  padding: 0;
+                }
+
+                inputbar {
+                  background-color: transparent;
+                  padding: 16px 20px;
+                  spacing: 0;
+                  border: 0px 0px 1px 0px;
+                  border-color: rgba(255, 255, 255, 0.1);
+                  children: [entry];
+                }
+
+                prompt {
+                  enabled: false;
+                }
+
+                entry {
+                  placeholder: "Spotlight Search";
+                  placeholder-color: @fg-dim;
+                  font: "JetBrainsMono Nerd Font 13";
+                  text-color: @fg;
+                }
+
+                message {
+                  padding: 12px;
+                  border-color: rgba(255, 255, 255, 0.1);
+                  background-color: transparent;
+                }
+
+                textbox {
+                  text-color: @fg-dim;
+                }
+
+                listview {
+                  background-color: transparent;
+                  padding: 4px 0px 8px 0px;
+                  lines: 8;
+                  columns: 1;
+                  fixed-height: false;
+                  scrollbar: false;
+                }
+
+                element {
+                  padding: 8px 20px;
+                  spacing: 14px;
+                  border-radius: 0px;
+                }
+
+                element normal normal {
+                  background-color: transparent;
+                  text-color: @fg;
+                }
+
+                element selected {
+                  background-color: @bg-selected;
+                  text-color: #ffffff;
+                }
+
+                element-icon {
+                  size: 32px;
+                  vertical-align: 0.5;
+                  background-color: transparent;
+                }
+
+                element-text {
+                  text-color: inherit;
+                  vertical-align: 0.5;
+                }
+              '';
+
+              # SwayNC config
+              home.file.".config/swaync/config.json".text = ''
+                {
+                  "positionX": "right",
+                  "positionY": "top",
+                  "control-center-margin-top": 10,
+                  "control-center-margin-bottom": 10,
+                  "control-center-margin-right": 10,
+                  "control-center-margin-left": 10,
+                  "control-center-width": 400,
+                  "control-center-height": 600,
+                  "notification-window-width": 400,
+                  "timeout": 5,
+                  "timeout-low": 3,
+                  "timeout-critical": 0,
+                  "fit-to-screen": true,
+                  "keyboard-shortcuts": true,
+                  "image-visibility": "when-available",
+                  "transition-time": 200,
+                  "hide-on-clear": false,
+                  "hide-on-action": true,
+                  "script-fail-notify": true,
+                  "widgets": [
+                    "title",
+                    "dnd",
+                    "volume",
+                    "backlight",
+                    "mpris",
+                    "notifications"
+                  ],
+                  "widget-config": {
+                    "title": {
+                      "text": "Notifications",
+                      "clear-all-button": true,
+                      "button-text": "Clear All"
+                    },
+                    "dnd": {
+                      "text": "Do Not Disturb"
+                    },
+                    "volume": {
+                      "label": "󰕾"
+                    },
+                    "backlight": {
+                      "label": "󰃠"
+                    },
+                    "mpris": {
+                      "image-size": 96,
+                      "image-radius": 8
+                    }
+                  }
+                }
+              '';
+
+              # SwayNC style
+              home.file.".config/swaync/style.css".text = ''
+                * {
+                  font-family: "JetBrainsMono Nerd Font";
+                  font-size: 11pt;
+                }
+
+                .control-center {
+                  background: rgba(30, 30, 46, 0.95);
+                  border: 2px solid #89b4fa;
+                  border-radius: 16px;
+                  padding: 12px;
+                }
+
+                .control-center .widget-title {
+                  background: transparent;
+                  color: #cdd6f4;
+                  font-size: 14pt;
+                  font-weight: bold;
+                  margin-bottom: 8px;
+                }
+
+                .control-center .widget-title button {
+                  background: #89b4fa;
+                  color: #11111b;
+                  border-radius: 8px;
+                  padding: 4px 12px;
+                  border: none;
+                }
+
+                .control-center .widget-title button:hover {
+                  background: #b4befe;
+                }
+
+                .control-center .widget-dnd {
+                  background: #181825;
+                  border-radius: 8px;
+                  padding: 8px;
+                  margin: 8px 0;
+                }
+
+                .control-center .widget-dnd label {
+                  color: #cdd6f4;
+                }
+
+                .notification {
+                  background: rgba(24, 24, 37, 0.95);
+                  border: 2px solid #313244;
+                  border-radius: 12px;
+                  padding: 12px;
+                  margin: 8px 0;
+                }
+
+                .notification.critical {
+                  border-color: #f38ba8;
+                }
+
+                .notification .notification-content {
+                  color: #cdd6f4;
+                }
+
+                .notification .notification-content .summary {
+                  color: #89b4fa;
+                  font-weight: bold;
+                  font-size: 12pt;
+                }
+
+                .notification .notification-content .body {
+                  color: #a6adc8;
+                  margin-top: 4px;
+                }
+
+                .notification .notification-action {
+                  background: #313244;
+                  color: #cdd6f4;
+                  border-radius: 6px;
+                  border: none;
+                  padding: 4px 8px;
+                  margin: 4px;
+                }
+
+                .notification .notification-action:hover {
+                  background: #45475a;
+                }
+
+                .notification .close-button {
+                  background: transparent;
+                  color: #f38ba8;
+                  border: none;
+                  font-size: 14pt;
+                }
+
+                .notification .close-button:hover {
+                  background: rgba(243, 139, 168, 0.2);
+                  border-radius: 50%;
+                }
+
+                .control-center .notification {
+                  background: #181825;
+                  border: 1px solid #313244;
+                }
+
+                .control-center .notification:hover {
+                  border-color: #89b4fa;
+                }
+
+                .widget-mpris {
+                  background: #181825;
+                  border-radius: 8px;
+                  padding: 12px;
+                  margin: 8px 0;
+                }
+
+                .widget-mpris .widget-mpris-player {
+                  color: #cdd6f4;
+                }
+
+                .widget-mpris .widget-mpris-title {
+                  color: #89b4fa;
+                  font-weight: bold;
+                }
+
+                .widget-mpris .widget-mpris-subtitle {
+                  color: #a6adc8;
+                }
+
+                .widget-mpris button {
+                  background: #313244;
+                  color: #cdd6f4;
+                  border: none;
+                  border-radius: 6px;
+                  padding: 4px 8px;
+                }
+
+                .widget-mpris button:hover {
+                  background: #45475a;
+                }
+
+                .widget-volume,
+                .widget-backlight {
+                  background: #181825;
+                  border-radius: 8px;
+                  padding: 12px;
+                  margin: 8px 0;
+                }
+
+                .widget-volume label,
+                .widget-backlight label {
+                  color: #89b4fa;
+                  font-size: 14pt;
+                  margin-right: 8px;
+                }
+
+                .widget-volume scale,
+                .widget-backlight scale {
+                  min-width: 200px;
+                }
+
+                .widget-volume trough,
+                .widget-backlight trough {
+                  background: #313244;
+                  border-radius: 4px;
+                  min-height: 8px;
+                }
+
+                .widget-volume highlight,
+                .widget-backlight highlight {
+                  background: #89b4fa;
+                  border-radius: 4px;
+                }
+
+                .widget-volume slider,
+                .widget-backlight slider {
+                  background: #cdd6f4;
+                  border-radius: 50%;
+                  min-width: 16px;
+                  min-height: 16px;
+                }
               '';
 
               # Hyprpaper config
@@ -311,6 +673,7 @@
                 exec-once = waybar
                 exec-once = hyprpaper
                 exec-once = ghostty
+                exec-once = swaync
 
                 env = NIXOS_OZONE_WL,1
                 env = XCURSOR_SIZE,24
@@ -369,6 +732,7 @@
                 bind = $mainMod, RETURN, exec, ghostty
                 bind = $mainMod, SPACE, exec, rofi -show drun
                 bind = $mainMod, B, exec, brave
+                bind = $mainMod, N, exec, swaync-client -t -sw
 
                 # Window switching (Alt+Tab)
                 bind = ALT, TAB, cyclenext,
@@ -498,7 +862,7 @@
 
                   "custom/git": {
                     "format": " {}",
-                    "exec": "git -C ~ rev-parse --abbrev-ref HEAD 2>/dev/null || echo ''",
+                    "exec": "git -C ~ rev-parse --abbrev-ref HEAD 2>/dev/null || echo",
                     "interval": 5,
                     "on-click": "ghostty -e lazygit",
                     "tooltip": false
@@ -506,7 +870,7 @@
 
                   "custom/docker": {
                     "format": " {}",
-                    "exec": "docker ps -q 2>/dev/null | wc -l",
+                    "exec": "docker ps -q 2>/dev/null | wc -l || echo 0",
                     "interval": 10,
                     "tooltip": false
                   }
