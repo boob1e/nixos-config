@@ -42,12 +42,12 @@
 
             # GNOME Desktop
             services.xserver.enable = true;
-            services.xserver.layout = "us";
-            services.xserver.displayManager.gdm.enable = true;
-            services.xserver.desktopManager.gnome.enable = true;
+            services.xserver.xkb.layout = "us";
+            services.displayManager.gdm.enable = true;
+            services.desktopManager.gnome.enable = true;
 
             # Audio (PipeWire)
-            hardware.pulseaudio.enable = false;
+            services.pulseaudio.enable = false;
             services.pipewire = {
               enable = true;
               alsa.enable = true;
@@ -94,6 +94,11 @@
               blueman
               networkmanagerapplet
 
+              # Rofi menus
+              networkmanager_dmenu
+              rofi-bluetooth
+              upower
+
               # 1Password
               _1password-cli
               _1password-gui
@@ -112,6 +117,71 @@
               (pkgs.writeShellScriptBin "nix-rebuild" ''
                 sudo nixos-rebuild switch --flake /etc/nixos#my-host
               '')
+
+              # Rofi power menu
+              (pkgs.writeShellScriptBin "rofi-power-menu" ''
+                chosen=$(echo -e "󰐥 Shutdown\n󰜉 Reboot\n󰍃 Logout\n󰒲 Suspend\n󰤄 Lock" | rofi -dmenu -i -p "Power Menu")
+                case "$chosen" in
+                  "󰐥 Shutdown") systemctl poweroff ;;
+                  "󰜉 Reboot") systemctl reboot ;;
+                  "󰍃 Logout") hyprctl dispatch exit ;;
+                  "󰒲 Suspend") systemctl suspend ;;
+                  "󰤄 Lock") loginctl lock-session ;;
+                esac
+              '')
+
+              # Rofi volume menu
+              (pkgs.writeShellScriptBin "rofi-volume-menu" ''
+                # Get current volume and sink
+                current_vol=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -oP '\d+%' | head -1 | tr -d '%')
+                current_sink=$(pactl get-default-sink)
+
+                # Get list of sinks
+                sinks=$(pactl list short sinks | awk '{print $2}')
+
+                # Build menu
+                menu="󰕾 Volume: $current_vol%\n"
+                menu+="󰝟 Mute Toggle\n"
+                menu+="─────────────\n"
+
+                while IFS= read -r sink; do
+                  if [ "$sink" = "$current_sink" ]; then
+                    menu+="󰓃 $sink (active)\n"
+                  else
+                    menu+="  $sink\n"
+                  fi
+                done <<< "$sinks"
+
+                chosen=$(echo -e "$menu" | rofi -dmenu -i -p "Audio")
+
+                case "$chosen" in
+                  "󰝟 Mute Toggle") pactl set-sink-mute @DEFAULT_SINK@ toggle ;;
+                  "󰓃 "* | "  "*)
+                    sink_name=$(echo "$chosen" | sed 's/^[󰓃 ]* //' | sed 's/ (active)//')
+                    pactl set-default-sink "$sink_name"
+                    ;;
+                esac
+              '')
+
+              # Rofi battery menu
+              (pkgs.writeShellScriptBin "rofi-battery-menu" ''
+                battery_info=$(upower -i /org/freedesktop/UPower/devices/battery_BAT0 2>/dev/null || upower -i /org/freedesktop/UPower/devices/battery_BAT1 2>/dev/null)
+
+                if [ -z "$battery_info" ]; then
+                  echo "No battery found" | rofi -dmenu -p "Battery"
+                  exit
+                fi
+
+                percentage=$(echo "$battery_info" | grep percentage | awk '{print $2}')
+                state=$(echo "$battery_info" | grep state | awk '{print $2}')
+                time_to=$(echo "$battery_info" | grep "time to" | cut -d: -f2- | xargs)
+
+                menu="Battery: $percentage\n"
+                menu+="Status: $state\n"
+                [ -n "$time_to" ] && menu+="Time: $time_to\n"
+
+                echo -e "$menu" | rofi -dmenu -p "Battery Info"
+              '')
             ];
 
             # XDG Portals (needed for screensharing, file pickers, camera, etc.)
@@ -127,11 +197,15 @@
             # User
             users.users.tommypickles = {
               isNormalUser = true;
+              shell = pkgs.zsh;
               extraGroups = [ "wheel" "networkmanager" "audio" "video" ];
             };
 
             security.sudo.enable = true;
             security.sudo.wheelNeedsPassword = true;
+
+            # Enable zsh system-wide
+            programs.zsh.enable = true;
 
             system.stateVersion = "24.11";
 
@@ -146,6 +220,7 @@
               home.username = "tommypickles";
               home.homeDirectory = "/home/tommypickles";
               home.stateVersion = "24.11";
+              home.enableNixpkgsReleaseCheck = false;
 
               programs.home-manager.enable = true;
 
@@ -153,7 +228,7 @@
               programs.zsh = {
                 enable = true;
                 oh-my-zsh.enable = true;
-                initExtra = ''
+                initContent = ''
                   # Run fastfetch on terminal open
                   fastfetch
                 '';
@@ -283,7 +358,8 @@
               # Jujutsu config
               home.file.".jjconfig.toml".text = ''
                 [ui]
-                editor = "true"
+                editor = "nvim"
+                pager = "cat"
 
                 [user]
                 name = "boobie"
@@ -734,15 +810,22 @@
                 bind = $mainMod, B, exec, brave
                 bind = $mainMod, N, exec, swaync-client -t -sw
 
+                # Quick settings menus
+                bind = $mainMod SHIFT, N, exec, networkmanager_dmenu
+                bind = $mainMod SHIFT, B, exec, rofi-bluetooth
+                bind = $mainMod, V, exec, rofi-volume-menu
+                bind = $mainMod SHIFT, P, exec, rofi-power-menu
+                bind = $mainMod SHIFT, A, exec, rofi-battery-menu
+
                 # Window switching (Alt+Tab)
                 bind = ALT, TAB, cyclenext,
                 bind = ALT, TAB, bringactivetotop,
 
                 # Window management
                 bind = $mainMod, Q, killactive,
+                bind = $mainMod, W, killactive,
                 bind = $mainMod, F, fullscreen,
                 bind = $mainMod, E, exec, brave
-                bind = $mainMod, W, exec, vscode-fhs
 
                 # Focus movement
                 bind = $mainMod, H, movefocus, l
@@ -887,12 +970,10 @@
                 }
 
                 window#waybar {
-                  background: rgba(10, 10, 18, 0.85);
-                  border-radius: 16px;
+                  background: transparent;
                   margin: 0px 0px;
                   padding: 4px 10px;
                   color: #cdd6f4;
-                  border: 1px solid rgba(137, 180, 250, 0.4);
                 }
 
                 #workspaces {
