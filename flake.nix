@@ -5,10 +5,11 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    ashell.url = "github:MalpenZibo/ashell";
     # hyprland.url = "github:hyprwm/Hyprland";
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }:
+  outputs = { self, nixpkgs, home-manager, ashell, ... }:
     let
       system = "x86_64-linux";
     in {
@@ -46,6 +47,40 @@
             services.displayManager.gdm.enable = true;
             services.desktopManager.gnome.enable = true;
 
+            # NVIDIA Configuration
+            services.xserver.videoDrivers = [ "nvidia" ];
+
+            hardware.nvidia = {
+              # Enable the proprietary NVIDIA driver
+              modesetting.enable = true;
+
+              # Enable the open source kernel module (disable for proprietary)
+              open = false;
+
+              # Enable NVIDIA settings menu
+              nvidiaSettings = true;
+
+              # Select the appropriate driver version
+              # Use "stable" for most systems, "beta" for latest features
+              package = config.boot.kernelPackages.nvidiaPackages.stable;
+
+              # Hybrid graphics (Optimus) configuration
+              prime = {
+                # Enable offload mode for hybrid graphics
+                offload = {
+                  enable = true;
+                  enableOffloadCmd = true;
+                };
+
+                # Find your bus IDs with: lspci | grep -E 'VGA|3D'
+                # Intel integrated graphics bus ID
+                intelBusId = "PCI:0:2:0";
+
+                # NVIDIA discrete GPU bus ID
+                nvidiaBusId = "PCI:1:0:0";
+              };
+            };
+
             # Audio (PipeWire)
             services.pulseaudio.enable = false;
             services.pipewire = {
@@ -70,12 +105,24 @@
               wget
               neovim
               ghostty
-              vscode-fhs
               brave
               sublime
+	      obsidian
 
               # Node.js LTS
               nodejs_22
+
+              # Go
+              go
+
+              # GCC Compiler
+              gcc
+
+              # NVIDIA utilities (nvidia-smi, nvidia-settings, etc.)
+              config.boot.kernelPackages.nvidiaPackages.stable
+
+              # NVIDIA VAAPI driver for hardware video acceleration
+              nvidia-vaapi-driver
 
               # Claude Code CLI
               claude-code
@@ -84,20 +131,17 @@
               hyprland
               hyprpaper
               hyprpicker
-              hyprcursor
-              waybar
+              # waybar  # Commented out - using ashell
+              # hyprpanel  # Commented out - using ashell
+              ashell.packages.${system}.default
               rofi
               wl-clipboard
               grim
               slurp
-              swaynotificationcenter
+              # swaynotificationcenter  # Commented out - using mako instead
               blueman
               networkmanagerapplet
-
-              # Rofi menus
-              networkmanager_dmenu
-              rofi-bluetooth
-              upower
+              mako  # Notification daemon for ashell
 
               # 1Password
               _1password-cli
@@ -234,6 +278,17 @@
                 '';
               };
 
+              # VSCode
+              programs.vscode = {
+                enable = true;
+                package = pkgs.vscode;
+                extensions = with pkgs.vscode-extensions; [
+                  catppuccin.catppuccin-vsc
+                  enkia.tokyo-night
+                  golang.go
+                ];
+              };
+
               # Starship prompt
               programs.starship = {
                 enable = true;
@@ -337,15 +392,6 @@
                 };
               };
 
-              # Cursor theme
-              home.pointerCursor = {
-                gtk.enable = true;
-                x11.enable = true;
-                package = pkgs.bibata-cursors;
-                name = "Bibata-Modern-Classic";
-                size = 24;
-              };
-
               # User packages
               home.packages = with pkgs; [
                 jq
@@ -354,6 +400,139 @@
                 fastfetch
                 jujutsu
               ];
+
+              # Simple cursor theme (replaces Hyprland logo cursor)
+              home.pointerCursor = {
+                gtk.enable = true;
+                x11.enable = true;
+                package = pkgs.adwaita-icon-theme;
+                name = "Adwaita";
+                size = 24;
+              };
+
+              # Brave browser policies for extensions
+              home.file.".config/BraveSoftware/Brave-Browser/Managed Preferences".text = builtins.toJSON {
+                ExtensionInstallForcelist = [
+                  "faghfoppoimhmffaephmideccaidpagj"  # Tab Sorter
+                  "ldgfbffkinooeloadekpmfoklnobpien"  # Raindrop
+                ];
+              };
+
+              # AShell configuration
+              home.file.".config/ashell/config.json".text = builtins.toJSON {
+                general = {
+                  scaling = 2.0;
+                  theme = "catppuccin";
+                };
+
+                bar = {
+                  position = "top";
+                  height = 40;
+                  margin = {
+                    top = 5;
+                    bottom = 0;
+                    left = 10;
+                    right = 10;
+                  };
+                };
+
+                theme = {
+                  name = "catppuccin-mocha";
+                  colors = {
+                    base = "#1e1e2e";
+                    mantle = "#181825";
+                    crust = "#11111b";
+                    text = "#cdd6f4";
+                    subtext0 = "#a6adc8";
+                    subtext1 = "#bac2de";
+                    surface0 = "#313244";
+                    surface1 = "#45475a";
+                    surface2 = "#585b70";
+                    overlay0 = "#6c7086";
+                    overlay1 = "#7f849c";
+                    overlay2 = "#9399b2";
+                    blue = "#89b4fa";
+                    lavender = "#b4befe";
+                    sapphire = "#74c7ec";
+                    sky = "#89dceb";
+                    teal = "#94e2d5";
+                    green = "#a6e3a1";
+                    yellow = "#f9e2af";
+                    peach = "#fab387";
+                    maroon = "#eba0ac";
+                    red = "#f38ba8";
+                    mauve = "#cba6f7";
+                    pink = "#f5c2e7";
+                    flamingo = "#f2cdcd";
+                    rosewater = "#f5e0dc";
+                  };
+                };
+
+                modules = {
+                  left = [
+                    {
+                      type = "workspaces";
+                      enabled = true;
+                    }
+                    {
+                      type = "window-title";
+                      enabled = true;
+                      maxLength = 60;
+                    }
+                  ];
+
+                  center = [
+                    {
+                      type = "clock";
+                      enabled = true;
+                      format = "%a %b %d  %H:%M";
+                    }
+                  ];
+
+                  right = [
+                    {
+                      type = "cpu";
+                      enabled = true;
+                      format = " {usage}%";
+                    }
+                    {
+                      type = "memory";
+                      enabled = true;
+                      format = " {used}GB";
+                    }
+                    {
+                      type = "network";
+                      enabled = true;
+                      format = " {down} ⬆ {up}";
+                      showSpeed = true;
+                    }
+                    {
+                      type = "bluetooth";
+                      enabled = true;
+                    }
+                    {
+                      type = "audio";
+                      enabled = true;
+                    }
+                    {
+                      type = "battery";
+                      enabled = true;
+                    }
+                    {
+                      type = "systray";
+                      enabled = true;
+                    }
+                    {
+                      type = "notifications";
+                      enabled = true;
+                    }
+                    {
+                      type = "power";
+                      enabled = true;
+                    }
+                  ];
+                };
+              };
 
               # Jujutsu config
               home.file.".jjconfig.toml".text = ''
@@ -369,7 +548,51 @@
               # Ghostty config
               home.file.".config/ghostty/config".text = ''
                 font-family = "JetBrains Mono"
-                font-size = 12
+                font-size = 20
+
+                # Catppuccin Mocha theme
+                background = #1e1e2e
+                foreground = #cdd6f4
+
+                # Cursor
+                cursor-color = #f5e0dc
+                cursor-text = #1e1e2e
+
+                # Selection
+                selection-background = #585b70
+                selection-foreground = #cdd6f4
+
+                # Black
+                palette = 0=#45475a
+                palette = 8=#585b70
+
+                # Red
+                palette = 1=#f38ba8
+                palette = 9=#f38ba8
+
+                # Green
+                palette = 2=#a6e3a1
+                palette = 10=#a6e3a1
+
+                # Yellow
+                palette = 3=#f9e2af
+                palette = 11=#f9e2af
+
+                # Blue
+                palette = 4=#89b4fa
+                palette = 12=#89b4fa
+
+                # Magenta
+                palette = 5=#f5c2e7
+                palette = 13=#f5c2e7
+
+                # Cyan
+                palette = 6=#94e2d5
+                palette = 14=#94e2d5
+
+                # White
+                palette = 7=#bac2de
+                palette = 15=#a6adc8
               '';
 
               # Rofi config
@@ -484,7 +707,8 @@
                 }
               '';
 
-              # SwayNC config
+              # SwayNC config (NOT IN USE - using hyprpanel notifications instead)
+              # Keeping config for reference, can uncomment to switch back
               home.file.".config/swaync/config.json".text = ''
                 {
                   "positionX": "right",
@@ -746,15 +970,28 @@
                 source = ~/.config/hypr/monitors.conf
 
                 # Autostart
-                exec-once = waybar
+                # exec-once = waybar  # Commented out - using ashell
+                # exec-once = hyprpanel  # Commented out - using ashell
+                exec-once = ashell
+                exec-once = mako
                 exec-once = hyprpaper
                 exec-once = ghostty
-                exec-once = swaync
+                # exec-once = swaync  # Commented out - using mako instead
 
                 env = NIXOS_OZONE_WL,1
+                env = XCURSOR_THEME,Adwaita
                 env = XCURSOR_SIZE,24
-                env = XCURSOR_THEME,Bibata-Modern-Classic
-                env = WLR_NO_HARDWARE_CURSORS,1
+
+                # NVIDIA-specific environment variables
+                env = LIBVA_DRIVER_NAME,nvidia
+                env = XDG_SESSION_TYPE,wayland
+                env = GBM_BACKEND,nvidia-drm
+                env = __GLX_VENDOR_LIBRARY_NAME,nvidia
+                env = NVD_BACKEND,direct
+
+                cursor {
+                  no_hardware_cursors = true
+                }
 
                 input {
                   kb_layout = us
@@ -768,6 +1005,8 @@
                   gaps_in = 6
                   gaps_out = 12
                   border_size = 2
+                  col.active_border = rgb(33ccff)
+                  col.inactive_border = rgba(595959aa)
                   layout = dwindle
                 }
 
@@ -811,8 +1050,6 @@
                 bind = $mainMod, N, exec, swaync-client -t -sw
 
                 # Quick settings menus
-                bind = $mainMod SHIFT, N, exec, networkmanager_dmenu
-                bind = $mainMod SHIFT, B, exec, rofi-bluetooth
                 bind = $mainMod, V, exec, rofi-volume-menu
                 bind = $mainMod SHIFT, P, exec, rofi-power-menu
                 bind = $mainMod SHIFT, A, exec, rofi-battery-menu
@@ -870,7 +1107,8 @@
                 }
               '';
 
-              # Waybar config
+              # Waybar config (NOT IN USE - using hyprpanel instead)
+              # Keeping config for reference, can uncomment to switch back
               home.file.".config/waybar/config".text = ''
                 {
                   "layer": "top",
@@ -1070,13 +1308,21 @@
               '';
 
               xdg.enable = true;
+
+              # NvChad setup - clone NvChad if it doesn't exist
+              home.activation.installNvChad = ''
+                if [ ! -d "$HOME/.config/nvim" ]; then
+                  ${pkgs.git}/bin/git clone https://github.com/NvChad/starter "$HOME/.config/nvim"
+                  echo "NvChad installed to ~/.config/nvim"
+                fi
+              '';
             };
 
             # Hyprland module (from nixpkgs)
+            # NVIDIA patches are automatically applied when hardware.nvidia is configured
             programs.hyprland = {
               enable = true;
               xwayland.enable = true;
-              # nvidiaPatches = true;
             };
 
             environment.sessionVariables = {
