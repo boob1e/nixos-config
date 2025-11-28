@@ -471,11 +471,11 @@
                 modules = {
                   left = [
                     {
-                      type = "workspaces";
+                      type = "Workspaces";
                       enabled = true;
                     }
                     {
-                      type = "window-title";
+                      type = "WindowTitle";
                       enabled = true;
                       maxLength = 60;
                     }
@@ -483,7 +483,7 @@
 
                   center = [
                     {
-                      type = "clock";
+                      type = "Clock";
                       enabled = true;
                       format = "%a %b %d  %H:%M";
                     }
@@ -491,43 +491,23 @@
 
                   right = [
                     {
-                      type = "cpu";
-                      enabled = true;
-                      format = " {usage}%";
-                    }
-                    {
-                      type = "memory";
-                      enabled = true;
-                      format = " {used}GB";
-                    }
-                    {
-                      type = "network";
-                      enabled = true;
-                      format = " {down} ⬆ {up}";
-                      showSpeed = true;
-                    }
-                    {
-                      type = "bluetooth";
+                      type = "SystemInfo";
                       enabled = true;
                     }
                     {
-                      type = "audio";
+                      type = "Clock";
                       enabled = true;
                     }
                     {
-                      type = "battery";
+                      type = "Privacy";
                       enabled = true;
                     }
                     {
-                      type = "systray";
+                      type = "Settings";
                       enabled = true;
                     }
                     {
-                      type = "notifications";
-                      enabled = true;
-                    }
-                    {
-                      type = "power";
+                      type = "Tray";
                       enabled = true;
                     }
                   ];
@@ -988,6 +968,10 @@
                 env = GBM_BACKEND,nvidia-drm
                 env = __GLX_VENDOR_LIBRARY_NAME,nvidia
                 env = NVD_BACKEND,direct
+
+                # Prioritize Intel integrated graphics over NVIDIA
+                # card1 (00:02.0) = Intel, card2 (01:00.0) = NVIDIA
+                env = AQ_DRM_DEVICES,/dev/dri/card1:/dev/dri/card2
 
                 cursor {
                   no_hardware_cursors = true
