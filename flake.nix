@@ -47,36 +47,22 @@
             services.displayManager.gdm.enable = true;
             services.desktopManager.gnome.enable = true;
 
-            # NVIDIA Configuration
+            # NVIDIA Prime Offload Configuration
+            # Intel GPU for desktop rendering, NVIDIA available on-demand
             services.xserver.videoDrivers = [ "nvidia" ];
 
             hardware.nvidia = {
-              # Enable the proprietary NVIDIA driver
               modesetting.enable = true;
-
-              # Enable the open source kernel module (disable for proprietary)
               open = false;
-
-              # Enable NVIDIA settings menu
               nvidiaSettings = true;
-
-              # Select the appropriate driver version
-              # Use "stable" for most systems, "beta" for latest features
               package = config.boot.kernelPackages.nvidiaPackages.stable;
 
-              # Hybrid graphics (Optimus) configuration
               prime = {
-                # Enable offload mode for hybrid graphics
                 offload = {
                   enable = true;
                   enableOffloadCmd = true;
                 };
-
-                # Find your bus IDs with: lspci | grep -E 'VGA|3D'
-                # Intel integrated graphics bus ID
                 intelBusId = "PCI:0:2:0";
-
-                # NVIDIA discrete GPU bus ID
                 nvidiaBusId = "PCI:1:0:0";
               };
             };
@@ -118,11 +104,9 @@
               # GCC Compiler
               gcc
 
-              # NVIDIA utilities (nvidia-smi, nvidia-settings, etc.)
-              config.boot.kernelPackages.nvidiaPackages.stable
-
-              # NVIDIA VAAPI driver for hardware video acceleration
-              nvidia-vaapi-driver
+              # NVIDIA packages
+              config.boot.kernelPackages.nvidiaPackages.stable  # nvidia-smi, nvidia-settings
+              nvidia-vaapi-driver  # Hardware video acceleration
 
               # Claude Code CLI
               claude-code
@@ -962,15 +946,12 @@
                 env = XCURSOR_THEME,Adwaita
                 env = XCURSOR_SIZE,24
 
-                # NVIDIA-specific environment variables
+                # NVIDIA-specific environment variables for Prime Offload
                 env = LIBVA_DRIVER_NAME,nvidia
                 env = XDG_SESSION_TYPE,wayland
                 env = GBM_BACKEND,nvidia-drm
                 env = __GLX_VENDOR_LIBRARY_NAME,nvidia
                 env = NVD_BACKEND,direct
-
-                # Prioritize Intel integrated graphics over NVIDIA
-                # card1 (00:02.0) = Intel, card2 (01:00.0) = NVIDIA
                 env = AQ_DRM_DEVICES,/dev/dri/card1:/dev/dri/card2
 
                 cursor {
