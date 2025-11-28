@@ -39,6 +39,9 @@
             boot.loader.efi.canTouchEfiVariables = true;
             boot.loader.grub.enable = false;
 
+            # Linux Zen Kernel - better desktop performance/latency
+            boot.kernelPackages = pkgs.linuxPackages_zen;
+
             networking.networkmanager.enable = true;
 
             # GNOME Desktop
@@ -72,11 +75,16 @@
               description = "Set NVIDIA GPU clock limits";
               wantedBy = [ "multi-user.target" ];
               after = [ "systemd-modules-load.service" ];
+              path = [ config.boot.kernelPackages.nvidiaPackages.stable ];
               serviceConfig = {
                 Type = "oneshot";
                 RemainAfterExit = true;
-                ExecStart = "${pkgs.linuxPackages.nvidia_x11}/bin/nvidia-smi -pm 1 && ${pkgs.linuxPackages.nvidia_x11}/bin/nvidia-smi -lgc 1000,2100 && ${pkgs.linuxPackages.nvidia_x11}/bin/nvidia-smi -lmc 810,5001";
               };
+              script = ''
+                nvidia-smi -pm 1
+                nvidia-smi -lgc 1000,2100
+                nvidia-smi -lmc 810,5001
+              '';
             };
 
             # Audio (PipeWire)
