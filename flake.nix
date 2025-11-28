@@ -5,11 +5,10 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    ashell.url = "github:MalpenZibo/ashell";
     # hyprland.url = "github:hyprwm/Hyprland";
   };
 
-  outputs = { self, nixpkgs, home-manager, ashell, ... }:
+  outputs = { self, nixpkgs, home-manager, ... }:
     let
       system = "x86_64-linux";
     in {
@@ -135,17 +134,14 @@
               hyprland
               hyprpaper
               hyprpicker
-              # waybar  # Commented out - using ashell
-              # hyprpanel  # Commented out - using ashell
-              ashell.packages.${system}.default
+              waybar
               rofi
               wl-clipboard
               grim
               slurp
-              # swaynotificationcenter  # Commented out - using mako instead
               blueman
               networkmanagerapplet
-              mako  # Notification daemon for ashell
+              mako
 
               # 1Password
               _1password-cli
@@ -420,102 +416,6 @@
                   "faghfoppoimhmffaephmideccaidpagj"  # Tab Sorter
                   "ldgfbffkinooeloadekpmfoklnobpien"  # Raindrop
                 ];
-              };
-
-              # AShell configuration
-              home.file.".config/ashell/config.json".text = builtins.toJSON {
-                general = {
-                  scaling = 2.0;
-                  theme = "catppuccin";
-                };
-
-                bar = {
-                  position = "top";
-                  height = 40;
-                  margin = {
-                    top = 5;
-                    bottom = 0;
-                    left = 10;
-                    right = 10;
-                  };
-                };
-
-                theme = {
-                  name = "catppuccin-mocha";
-                  colors = {
-                    base = "#1e1e2e";
-                    mantle = "#181825";
-                    crust = "#11111b";
-                    text = "#cdd6f4";
-                    subtext0 = "#a6adc8";
-                    subtext1 = "#bac2de";
-                    surface0 = "#313244";
-                    surface1 = "#45475a";
-                    surface2 = "#585b70";
-                    overlay0 = "#6c7086";
-                    overlay1 = "#7f849c";
-                    overlay2 = "#9399b2";
-                    blue = "#89b4fa";
-                    lavender = "#b4befe";
-                    sapphire = "#74c7ec";
-                    sky = "#89dceb";
-                    teal = "#94e2d5";
-                    green = "#a6e3a1";
-                    yellow = "#f9e2af";
-                    peach = "#fab387";
-                    maroon = "#eba0ac";
-                    red = "#f38ba8";
-                    mauve = "#cba6f7";
-                    pink = "#f5c2e7";
-                    flamingo = "#f2cdcd";
-                    rosewater = "#f5e0dc";
-                  };
-                };
-
-                modules = {
-                  left = [
-                    {
-                      type = "Workspaces";
-                      enabled = true;
-                    }
-                    {
-                      type = "WindowTitle";
-                      enabled = true;
-                      maxLength = 60;
-                    }
-                  ];
-
-                  center = [
-                    {
-                      type = "Clock";
-                      enabled = true;
-                      format = "%a %b %d  %H:%M";
-                    }
-                  ];
-
-                  right = [
-                    {
-                      type = "SystemInfo";
-                      enabled = true;
-                    }
-                    {
-                      type = "Clock";
-                      enabled = true;
-                    }
-                    {
-                      type = "Privacy";
-                      enabled = true;
-                    }
-                    {
-                      type = "Settings";
-                      enabled = true;
-                    }
-                    {
-                      type = "Tray";
-                      enabled = true;
-                    }
-                  ];
-                };
               };
 
               # Jujutsu config
@@ -954,13 +854,10 @@
                 source = ~/.config/hypr/monitors.conf
 
                 # Autostart
-                # exec-once = waybar  # Commented out - using ashell
-                # exec-once = hyprpanel  # Commented out - using ashell
-                exec-once = ashell
+                exec-once = waybar
                 exec-once = mako
                 exec-once = hyprpaper
                 exec-once = ghostty
-                # exec-once = swaync  # Commented out - using mako instead
 
                 env = NIXOS_OZONE_WL,1
                 env = XCURSOR_THEME,Adwaita
@@ -1092,8 +989,7 @@
                 }
               '';
 
-              # Waybar config (NOT IN USE - using hyprpanel instead)
-              # Keeping config for reference, can uncomment to switch back
+              # Waybar config
               home.file.".config/waybar/config".text = ''
                 {
                   "layer": "top",
