@@ -134,6 +134,7 @@
               hyprland
               hyprpaper
               hyprpicker
+              hyprlock
               waybar
               rofi
               wl-clipboard
@@ -170,7 +171,7 @@
                   "󰜉 Reboot") systemctl reboot ;;
                   "󰍃 Logout") hyprctl dispatch exit ;;
                   "󰒲 Suspend") systemctl suspend ;;
-                  "󰤄 Lock") loginctl lock-session ;;
+                  "󰤄 Lock") hyprlock ;;
                 esac
               '')
 
@@ -831,6 +832,80 @@
                 wallpaper = ,/home/tommypickles/Pictures/color_mountains.jpg
               '';
 
+              # Hyprlock config
+              home.file.".config/hypr/hyprlock.conf".text = ''
+                general {
+                  disable_loading_bar = false
+                  hide_cursor = true
+                  grace = 0
+                  no_fade_in = false
+                  no_fade_out = false
+                }
+
+                background {
+                  monitor =
+                  path = /home/tommypickles/Pictures/color_mountains.jpg
+                  blur_passes = 3
+                  blur_size = 8
+                  noise = 0.0117
+                  contrast = 0.8916
+                  brightness = 0.8172
+                  vibrancy = 0.1696
+                  vibrancy_darkness = 0.0
+                }
+
+                input-field {
+                  monitor =
+                  size = 300, 50
+                  outline_thickness = 2
+                  dots_size = 0.2
+                  dots_spacing = 0.35
+                  dots_center = true
+                  outer_color = rgb(89b4fa)
+                  inner_color = rgb(1e1e2e)
+                  font_color = rgb(cdd6f4)
+                  fade_on_empty = false
+                  placeholder_text = <span foreground="##a6adc8">Enter password...</span>
+                  hide_input = false
+                  position = 0, -200
+                  halign = center
+                  valign = center
+                }
+
+                label {
+                  monitor =
+                  text = cmd[update:1000] echo "$(date +"%A, %B %d")"
+                  color = rgb(cdd6f4)
+                  font_size = 22
+                  font_family = JetBrainsMono Nerd Font
+                  position = 0, 300
+                  halign = center
+                  valign = center
+                }
+
+                label {
+                  monitor =
+                  text = cmd[update:1000] echo "$(date +"%H:%M")"
+                  color = rgb(cdd6f4)
+                  font_size = 95
+                  font_family = JetBrainsMono Nerd Font Bold
+                  position = 0, 200
+                  halign = center
+                  valign = center
+                }
+
+                label {
+                  monitor =
+                  text = Hi, $USER
+                  color = rgb(89b4fa)
+                  font_size = 18
+                  font_family = JetBrainsMono Nerd Font
+                  position = 0, -250
+                  halign = center
+                  valign = center
+                }
+              '';
+
               # Hyprland monitors config
               home.file.".config/hypr/monitors.conf".text = ''
                 # External monitor (DP-2) with 2.0 scaling
@@ -1028,7 +1103,7 @@
                   },
 
                   "memory": {
-                    "format": " {used:0.1f}G",
+                    "format": "{used:0.1f}G",
                     "tooltip": true
                   },
 
@@ -1044,9 +1119,9 @@
                   },
 
                   "network": {
-                    "format-wifi": " {essid}",
-                    "format-ethernet": " {ifname}",
-                    "format-disconnected": " offline",
+                    "format-wifi": "  {essid}",
+                    "format-ethernet": "󰈀 {ifname}",
+                    "format-disconnected": "  offline",
                     "tooltip": true
                   },
 
