@@ -1,0 +1,86 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 32,
+  "margin-top": 4,
+  "margin-left": 8,
+  "margin-right": 8,
+  "modules-left": ["hyprland/workspaces", "hyprland/window", "custom/git", "custom/docker"],
+  "modules-center": [],
+  "modules-right": ["cpu", "memory", "pulseaudio", "network", "battery", "clock", "tray"],
+
+  "hyprland/workspaces": {
+    "format": "{name}",
+    "on-click": "hyprctl dispatch workspace {name}",
+    "on-scroll-up": "hyprctl dispatch workspace e+1",
+    "on-scroll-down": "hyprctl dispatch workspace e-1",
+    "sort-by-number": true
+  },
+
+  "hyprland/window": {
+    "format": "{title}",
+    "max-length": 60,
+    "separate-outputs": false
+  },
+
+  "clock": {
+    "format": "{:%a %b %d  %H:%M}",
+    "tooltip": true,
+    "tooltip-format": "{:%Y-%m-%d %H:%M:%S}"
+  },
+
+  "cpu": {
+    "format": " {usage}%",
+    "tooltip": true
+  },
+
+  "memory": {
+    "format": " {used:0.1f}G",
+    "tooltip": true
+  },
+
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": " muted",
+    "format-icons": {
+      "default": [" ", "", ""]
+    },
+    "on-click": "pwvucontrol",
+    "on-click-right": "pactl set-default-sink $(pactl list short sinks | grep -v $(pactl get-default-sink) | head -n1 | cut -f2)",
+    "tooltip-format": "{desc}"
+  },
+
+  "network": {
+    "format-wifi": "󰖩 {essid}",
+    "format-ethernet": "󰈀 {ifname}",
+    "format-disconnected": " 󰤮 offline",
+    "tooltip": true
+  },
+
+  "battery": {
+    "format": "{capacity}%",
+    "format-charging": "󰁹{capacity}%",
+    "interval": 30,
+    "tooltip": true
+  },
+
+  "tray": {
+    "icon-size": 16,
+    "spacing": 8
+  },
+
+  "custom/git": {
+    "format": " {}",
+    "exec": "git -C ~ rev-parse --abbrev-ref HEAD 2>/dev/null || echo",
+    "interval": 5,
+    "on-click": "ghostty -e lazygit",
+    "tooltip": false
+  },
+
+  "custom/docker": {
+    "format": " {}",
+    "exec": "docker ps -q 2>/dev/null | wc -l || echo 0",
+    "interval": 10,
+    "tooltip": false
+  }
+}

@@ -1,0 +1,92 @@
+* {
+  bg: rgba(28, 28, 35, 0.92);
+  bg-selected: rgba(60, 120, 240, 0.85);
+  fg: #e8e8e8;
+  fg-dim: #888888;
+
+  background-color: transparent;
+  text-color: @fg;
+
+  margin: 0;
+  padding: 0;
+  spacing: 0;
+}
+
+window {
+  location: north;
+  y-offset: 200;
+  width: 640;
+  border-radius: 12px;
+  background-color: @bg;
+  transparency: "real";
+}
+
+mainbox {
+  padding: 0;
+}
+
+inputbar {
+  background-color: transparent;
+  padding: 16px 20px;
+  spacing: 0;
+  border: 0px 0px 1px 0px;
+  border-color: rgba(255, 255, 255, 0.1);
+  children: [entry];
+}
+
+prompt {
+  enabled: false;
+}
+
+entry {
+  placeholder: "Spotlight Search";
+  placeholder-color: @fg-dim;
+  font: "JetBrainsMono Nerd Font 13";
+  text-color: @fg;
+}
+
+message {
+  padding: 12px;
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: transparent;
+}
+
+textbox {
+  text-color: @fg-dim;
+}
+
+listview {
+  background-color: transparent;
+  padding: 4px 0px 8px 0px;
+  lines: 8;
+  columns: 1;
+  fixed-height: false;
+  scrollbar: false;
+}
+
+element {
+  padding: 8px 20px;
+  spacing: 14px;
+  border-radius: 0px;
+}
+
+element normal normal {
+  background-color: transparent;
+  text-color: @fg;
+}
+
+element selected {
+  background-color: @bg-selected;
+  text-color: #ffffff;
+}
+
+element-icon {
+  size: 32px;
+  vertical-align: 0.5;
+  background-color: transparent;
+}
+
+element-text {
+  text-color: inherit;
+  vertical-align: 0.5;
+}
