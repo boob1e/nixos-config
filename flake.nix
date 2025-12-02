@@ -5,9 +5,10 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    zen-browser.url = "github:0xc000022070/zen-browser-flake";
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }:
+  outputs = { self, nixpkgs, home-manager, zen-browser, ... }:
     let
       system = "x86_64-linux";
     in {
@@ -107,11 +108,12 @@
               git
               curl
               wget
-              neovim
               ghostty
               brave
+              zen-browser.packages."${system}".default
               sublime
 	            obsidian
+              gitkraken
 
               # Node.js LTS
               nodejs_22
@@ -156,6 +158,9 @@
 
               # Icons
               papirus-icon-theme
+
+              # File sharing
+              localsend
 
               # Custom shorthand: nix-rebuild
               (pkgs.writeShellScriptBin "nix-rebuild" ''
@@ -267,10 +272,28 @@
                 settings = (import ./starship-presets.nix).developer;
               };
 
+              # Neovim with LSP servers and tools for NvChad
+              programs.neovim = {
+                enable = true;
+                defaultEditor = true;
+                viAlias = true;
+                vimAlias = true;
+                extraPackages = with pkgs; [
+                  # LSP servers
+                  gopls
+                  lua-language-server
+                  nil
+                  vscode-langservers-extracted  # html, css, json, eslint
+
+                  # Telescope dependencies
+                  ripgrep
+                  fd
+                ];
+              };
+
               # User packages
               home.packages = with pkgs; [
                 jq
-                ripgrep
                 ghostty
                 fastfetch
                 jujutsu
