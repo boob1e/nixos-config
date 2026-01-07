@@ -108,10 +108,13 @@
               git
               curl
               wget
+              gnumake
+              nushell
               ghostty
               brave
               zen-browser.packages."${system}".default
               sublime
+              zed-editor
 	            obsidian
               gitkraken
 
@@ -123,6 +126,12 @@
 
               # GCC Compiler
               gcc
+
+              # GPG
+              gnupg
+
+              # Signal Desktop
+              signal-desktop
 
               # NVIDIA packages
               config.boot.kernelPackages.nvidiaPackages.stable  # nvidia-smi, nvidia-settings
