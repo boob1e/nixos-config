@@ -28,6 +28,9 @@
 
             nixpkgs.config.allowUnfree = true;
             networking.hostName = "my-host";
+            networking.hosts = {
+              "192.168.1.101" = [ "umbrel.local" ];
+            };
             time.timeZone = "America/New_York";
             i18n.defaultLocale = "en_US.UTF-8";
 
@@ -41,13 +44,22 @@
             # Linux Zen Kernel - better desktop performance/latency
             boot.kernelPackages = pkgs.linuxPackages_zen;
 
+            # Kernel parameters for NVIDIA power management and suspend/resume
+            boot.kernelParams = [
+              # Preserve video memory allocations across suspend/resume to prevent freeze
+              "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+              # Temporary file path for NVIDIA suspend/resume
+              "nvidia.NVreg_TemporaryFilePath=/var/tmp"
+            ];
+
             networking.networkmanager.enable = true;
 
             # GNOME Desktop
             services.xserver.enable = true;
             services.xserver.xkb.layout = "us";
-            services.displayManager.gdm.enable = true;
-            services.desktopManager.gnome.enable = true;
+            services.xserver.displayManager.gdm.enable = true;
+            services.xserver.displayManager.gdm.wayland = true;
+            services.xserver.desktopManager.gnome.enable = true;
 
             # NVIDIA Prime Offload Configuration
             # Intel GPU for desktop rendering, NVIDIA available on-demand
@@ -86,6 +98,28 @@
               '';
             };
 
+            # NVIDIA sleep/resume hooks to prevent display freeze
+            systemd.services.nvidia-resume = {
+              description = "NVIDIA GPU resume from suspend";
+              after = [ "suspend.target" "hibernate.target" "hybrid-sleep.target" ];
+              wantedBy = [ "suspend.target" "hibernate.target" "hybrid-sleep.target" ];
+              path = [ config.boot.kernelPackages.nvidiaPackages.stable ];
+              serviceConfig = {
+                Type = "oneshot";
+              };
+              script = ''
+                # Re-apply clock limits after resume
+                nvidia-smi -pm 1
+                nvidia-smi -lgc 1000,2100
+                nvidia-smi -lmc 810,5001
+              '';
+            };
+
+            # Systemd sleep configuration
+            systemd.sleep.extraConfig = ''
+              HibernateDelaySec=30m
+            '';
+
             # Audio (PipeWire)
             services.pulseaudio.enable = false;
             services.pipewire = {
@@ -118,6 +152,10 @@
 	            obsidian
               gitkraken
 
+              # GNOME packages
+              gnome-tweaks
+              gnomeExtensions.dash-to-dock
+
               # Node.js LTS
               nodejs_22
 
@@ -132,6 +170,9 @@
 
               # Signal Desktop
               signal-desktop
+
+              # SimpleX Chat
+              simplex-chat-desktop
 
               # NVIDIA packages
               config.boot.kernelPackages.nvidiaPackages.stable  # nvidia-smi, nvidia-settings
